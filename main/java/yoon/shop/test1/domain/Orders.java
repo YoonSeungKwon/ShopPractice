@@ -29,7 +29,7 @@ public class Orders {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="order_member")
-    private Members member;
+    private Members buyer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="order_product")

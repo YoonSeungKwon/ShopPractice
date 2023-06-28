@@ -1,5 +1,6 @@
 package yoon.shop.test1.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 @Table(name="product")
 public class Product {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="product_idx")
@@ -30,7 +32,20 @@ public class Product {
     @Column(nullable = false)
     private int price;
 
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="product_member")
+    private Members seller;
+
     @CreationTimestamp
     @Column(nullable = false)
     private LocalDateTime regdate;
+
+    public Product(String name, String category, int price, Members seller){
+        this.name = name;
+        this.category = category;
+        this.price = price;
+        this.seller = seller;
+    }
+
 }

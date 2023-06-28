@@ -14,6 +14,8 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final MemberAuthenticationProvider memberAuthenticationProvider;
+
     @Bean
     public BCryptPasswordEncoder passwordEncoder(){
         return  new BCryptPasswordEncoder();
@@ -22,10 +24,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+
+                .csrf(csrf->csrf.disable())
+                .httpBasic(Customizer.withDefaults())
+
                 .authorizeHttpRequests(auth ->{
                     auth.anyRequest().permitAll();
                 })
-                .csrf(csrf->csrf.disable())
+                .formLogin(formLogin -> formLogin
+                        .loginProcessingUrl("/member/login")
+                        .usernameParameter("email")
+                        .passwordParameter("password")
+                        .defaultSuccessUrl("/login/success")
+                )
+                .authenticationProvider(memberAuthenticationProvider)
                 .build();
     }
 
