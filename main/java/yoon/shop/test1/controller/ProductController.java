@@ -7,7 +7,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import yoon.shop.test1.domain.Product;
-import yoon.shop.test1.dto.MemberDto;
 import yoon.shop.test1.dto.ProductDto;
 import yoon.shop.test1.message.Message;
 import yoon.shop.test1.message.StatusEnum;
@@ -48,7 +47,7 @@ public class ProductController {
     }
 
     @GetMapping("/product/{idx}")    //See Specific Product
-    public ResponseEntity<Message> product(@PathVariable String idx){
+    public ResponseEntity<Message> product(@PathVariable String idx) throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(new MediaType("application", "JSON", Charset.forName("UTF-8")));
         Message message = new Message();
@@ -68,7 +67,7 @@ public class ProductController {
     }
 
     @GetMapping("/product/detail/{idx}")    //Product Detail Page
-    public ResponseEntity<Message> detailProduct(@PathVariable String idx, Principal principal){
+    public ResponseEntity<Message> detailProduct(@PathVariable String idx, Principal principal) throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(new MediaType("application", "JSON", Charset.forName("UTF-8")));
         Message message = new Message();
@@ -95,20 +94,20 @@ public class ProductController {
     }
 
     @PostMapping("/product/join")   //Register Product
-    public ResponseEntity<Message> joinProduct(ProductDto dto, Principal principal)throws NullPointerException{
+    public ResponseEntity<Message> joinProduct(ProductDto dto, Principal principal) throws Exception {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(new MediaType("application", "JSON", Charset.forName("UTF-8")));
         Message message = new Message();
 
         ProductDto result = productService.join(principal, dto);
 
-        if(result.getName().equals("Not") || principal == null){
+        if(result.getName().equals("None")){
             message.setStatusEnum(StatusEnum.NOT_FOUND);
             message.setMessage("해당 유저가 존재하지 않음");
             message.setData(null);
             return new ResponseEntity<>(message, httpHeaders, HttpStatus.NOT_FOUND);
         }
-        if(result.getName().equals("None")){
+        if(result.getName().equals("Not")){
             message.setStatusEnum(StatusEnum.NOT_FOUND);
             message.setMessage("상품의 값이 유효하지 않음");
             message.setData(null);
@@ -121,12 +120,54 @@ public class ProductController {
     }
 
     @PutMapping("/product/detail/{idx}/link")  //Update Product
-    public String updateProduct(@PathVariable String idx, ProductDto pDto){
-        return "";
+    public ResponseEntity<Message> updateProduct(@PathVariable String idx, ProductDto dto) throws Exception {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(new MediaType("application", "JSON", Charset.forName("UTF-8")));
+        Message message = new Message();
+
+        ProductDto result = productService.update(idx, dto);
+
+        if(result.getName().equals("None")){
+            message.setStatusEnum(StatusEnum.NOT_FOUND);
+            message.setMessage("해당 제품이 존재하지 않음");
+            message.setData(null);
+            return new ResponseEntity<>(message, httpHeaders, HttpStatus.NOT_FOUND);
+        }
+        if(result.getName().equals("Not")){
+            message.setStatusEnum(StatusEnum.NOT_FOUND);
+            message.setMessage("변경하는 값이 유효하지 않음");
+            message.setData(null);
+            return new ResponseEntity<>(message, httpHeaders, HttpStatus.NOT_FOUND);
+        }
+        message.setStatusEnum(StatusEnum.OK);
+        message.setMessage("상품 변경 완료");
+        message.setData(result);
+        return new ResponseEntity<>(message, httpHeaders, HttpStatus.OK);
     }
 
     @DeleteMapping("/product/unlink/{idx}") //Delete Product
-    public String deleteProduct(@PathVariable String idx, Principal principal){
-        return "";
+    public ResponseEntity<Message> deleteProduct(@PathVariable String idx, Principal principal) throws Exception {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(new MediaType("application", "JSON", Charset.forName("UTF-8")));
+        Message message = new Message();
+
+        ProductDto result = productService.delete(idx, principal);
+
+        if(result.getName().equals("None")){
+            message.setStatusEnum(StatusEnum.NOT_FOUND);
+            message.setMessage("해당 유저 또는 상품이 존재하지 않음");
+            message.setData(null);
+            return new ResponseEntity<>(message, httpHeaders, HttpStatus.NOT_FOUND);
+        }
+        if(result.getName().equals("Not")){
+            message.setStatusEnum(StatusEnum.NOT_FOUND);
+            message.setMessage("판매자가 일치하지 않음");
+            message.setData(null);
+            return new ResponseEntity<>(message, httpHeaders, HttpStatus.NOT_FOUND);
+        }
+        message.setStatusEnum(StatusEnum.OK);
+        message.setMessage("상품 삭제 완료");
+        message.setData(result);
+        return new ResponseEntity<>(message, httpHeaders, HttpStatus.OK);
     }
 }

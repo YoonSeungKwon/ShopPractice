@@ -23,7 +23,7 @@ public class ProductService {
         return list;
     }
 
-    public ProductDto read(String idx){
+    public ProductDto read(String idx) throws  Exception{
         Long id = Long.parseLong(idx);
 
         Product product = productRepository.findProductByIdx(id);
@@ -33,24 +33,27 @@ public class ProductService {
         return new ProductDto(product.getName(), product.getCategory(), product.getPrice());
     }
 
-    public ProductDto read(String idx, Principal principal){
+    public ProductDto read(String idx, Principal principal) throws  Exception{
         Long id = Long.parseLong(idx);
 
         Product product = productRepository.findProductByIdx(id);
+        Members member = memberRepository.findMembersByEmail(principal.getName());
 
-        if(product == null)
+        if(product == null || member == null)
             return new ProductDto("None",null,0);   //No Such Product
-        if(!product.getSeller().getEmail().equals(principal.getName()))
+        if(product.getSeller() != member)
             return new ProductDto("Not",null,0);    //Not Same Seller
 
         return new ProductDto(product.getName(), product.getCategory(), product.getPrice());
     }
 
-    public ProductDto join(Principal principal, ProductDto dto){
+    public ProductDto join(Principal principal, ProductDto dto) throws  Exception{
+
         Members member = memberRepository.findMembersByEmail(principal.getName());
+
         if(member==null)
             return new ProductDto("None", null ,0);   //Member not Found
-        if(dto.getName()==null||dto.getCategory()==null||dto.getPrice()==0)
+        if(dto.getName()==null||dto.getCategory()==null||dto.getPrice()<=0)
             return new ProductDto("Not",null,0);       //Product Data not Valid
         Product product = Product.builder()
                 .name(dto.getName())
@@ -60,5 +63,38 @@ public class ProductService {
                 .build();
         productRepository.save(product);
         return new ProductDto(product.getName(), product.getCategory(), product.getPrice());
+    }
+
+    public ProductDto update(String idx, ProductDto dto) throws  Exception{
+        Long id = Long.parseLong(idx);
+        Product product = productRepository.findProductByIdx(id);
+        if(product == null)
+            return new ProductDto("None",null,0);
+
+        if(dto.getName() == null || dto.getCategory() == null || dto.getPrice()<=0)
+            return new ProductDto("Not", null, 0);
+        product.setName(dto.getName());
+        product.setCategory(dto.getCategory());
+        product.setPrice(dto.getPrice());
+
+        productRepository.save(product);
+
+        return new ProductDto(dto.getName(), dto.getCategory(), dto.getPrice());
+    }
+
+    public ProductDto delete(String idx, Principal principal)throws Exception{
+
+        Long id = Long.parseLong(idx);
+        Members member = memberRepository.findMembersByEmail(principal.getName());
+        Product product = productRepository.findProductByIdx(id);
+        if(member == null || product == null)
+            return new ProductDto("None", null, 0);
+        if(product.getSeller() != member)
+            return new ProductDto("Not", null, 0);
+
+        ProductDto productDto = new ProductDto(product.getName(), product.getCategory(), product.getPrice());
+        productRepository.delete(product);
+
+        return productDto;
     }
 }

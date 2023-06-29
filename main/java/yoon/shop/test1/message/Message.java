@@ -1,6 +1,5 @@
 package yoon.shop.test1.message;
 
-import jdk.jshell.Snippet;
 import lombok.Data;
 
 @Data

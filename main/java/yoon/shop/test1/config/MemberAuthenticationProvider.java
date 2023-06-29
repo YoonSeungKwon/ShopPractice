@@ -9,7 +9,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
-import yoon.shop.test1.domain.Members;
 import yoon.shop.test1.service.MemberDetailService;
 
 @RequiredArgsConstructor
